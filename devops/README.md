@@ -10,8 +10,8 @@ To follow the instructions you will need:
  
 To use your IAM credentials to authenticate the Terraform AWS provider, configure the AWS settings, e.g.,
 
-```toml
+```text
 [clamour]
-	aws_access_key_id=AKIAIOSFODNN7EXAMPLE
-	aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 ```
