@@ -8,9 +8,9 @@ To follow the instructions, you will need:
  - The AWS CLI installed.
  - AWS account and associated credentials that allow you to create resources.
  
-To use your IAM credentials to authenticate the Terraform AWS provider, configure the AWS settings, e.g.,
+To use your IAM credentials to authenticate the Terraform AWS provider, add the following configuration in *~/.aws/credentials*:
 
-```text:~/.aws/credentials
+```text
 [clamour]
 aws_access_key_id=AKIAIOSFODNN7EXAMPLE
 aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
