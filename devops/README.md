@@ -4,7 +4,7 @@
 
 To follow the instructions, you will need:
 
- - The Terraform CLI installed.
+ - The Terraform CLI (1.0.0+) installed.
  - The AWS CLI installed.
  - AWS account and associated credentials that allow you to create resources.
  
