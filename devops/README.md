@@ -4,10 +4,10 @@
 
 To follow the instructions, you will need:
 
- - The Terraform CLI (1.0.0+) installed.
+ - The Terraform CLI (~> 1.2.0) installed.
  - The AWS CLI installed.
  - AWS account and associated credentials that allow you to create resources.
- - AWS S3 backend stores the state as a given key in a given bucket.
+ - AWS S3 backend that stores the state as a given key in a given bucket.
  
 To use your IAM credentials to authenticate the Terraform AWS provider, add the following configuration in *~/.aws/credentials*:
 
