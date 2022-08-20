@@ -10,30 +10,30 @@ locals {
 }
 
 terraform {
-  required_version = "~> 1.2.0"
+  required_version = "1.2.0"
 
-  backend "s3" {
-    bucket  = "clamour"
-    key     = "eks/terraform.tfstate"
-    profile = "${local.aws_profile}"
-    region  = "${local.aws_region}"
-  }
+#  backend "s3" {
+#    bucket  = "clamour"
+#    key     = "eks/terraform.tfstate"
+#    profile = "clamour"
+#    region  = "ap-northeast-1"
+#  }
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.26.0"
+      version = "4.27.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.12.0"
+      version = "2.12.1"
     }
   }
 }
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 3.14.0"
+  version = "3.14.2"
   name    = "${local.app_prefix}-vpc"
 
   azs             = ["ap-northeast-1a", "ap-northeast-1c"]
@@ -58,9 +58,9 @@ module "vpc" {
 
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
-  version         = "~> 18.28.0"
+  version         = "18.28.0"
   cluster_name    = "${local.app_prefix}-k8s"
-  cluster_version = "1.22.10"
+  cluster_version = "1.23"
 
   vpc_id                          = module.vpc.vpc_id
   subnet_ids                      = module.vpc.private_subnets
@@ -130,4 +130,8 @@ data "aws_eks_cluster" "cluster" {
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
+}
+
+output "aws_auth_config_map" {
+  value = module.eks.aws_auth_configmap_yaml
 }
