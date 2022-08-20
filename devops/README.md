@@ -11,12 +11,17 @@ To follow the instructions, you will need:
 
 ### IAM credentials
  
-To use your IAM credentials to authenticate the Terraform AWS provider, add the following configuration in *~/.aws/credentials* with proper keys:
+To use your IAM credentials to authenticate the Terraform AWS provider, configure your AWS CLI with proper proper values:
 
-```text
-[clamour]
-aws_access_key_id=AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+```bash
+ $ aws configure --profile clamour
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: ap-southeast-1
+Default output format [None]: text
+ $ export AWS_DEFAULT_PROFILE=clamour
+ $ aws sts get-caller-identity
+xxxxxxxxxxxx    arn:aws:iam::yyyyyyyyyyyy:user/clamour  ZZZZZZZZZZZZZZZZZZZZZ
 ```
 
 ### Terraform S3 remote store backend
@@ -43,7 +48,7 @@ After the initialization, run the following command to execute actions proposed 
 Run the following command and output the EKS auth config YAML file:
 
 ```bash
- $ terraform output aws_auth_config_map | sed -e '/<<EOT$/d;/^EOT$/d;/^$/d' > aws_auth_config_map.yaml
+ $ terraform output aws_auth_config_map | sed -e '/<<EOT$/d;/^EOT$/d;/^$/d' > aws-auth-config-map.yaml
 ```
 
 The resulting file looks like this:
@@ -63,7 +68,7 @@ data:
         - system:nodes
 ```
 
-To authenticate *clamour* user to access EKS, configure the *aws-auth-config-map.yaml* as follows with the proper IAM ARN:
+To authenticate *clamour* user to access EKS, configure *aws-auth-config-map.yaml* as follows with the proper IAM ARN:
 
 ```yaml
 apiVersion: v1
@@ -84,4 +89,18 @@ data:
       username: clamour
       groups:
         - system:masters
+```
+
+After configuring *aws-auth-config-map.yaml*, update *kubeconfig* and apply *ConfigMap*:
+
+```bash
+ $ aws eks update-kubeconfig --name clamour-k8s
+ $ kubectl apply -f aws-auth-configmal.yaml
+```
+ 
+ To check if the above configurations is applied properly, run the following commands:
+ 
+```bash
+ $ kubectl config view
+ $ kubectl cluster-info
 ```
