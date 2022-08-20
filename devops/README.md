@@ -43,7 +43,7 @@ After the initialization, run the following command to execute actions proposed 
 Run the following command and output the EKS auth config YAML file:
 
 ```bash
- $ terraform output aws_auth_config_map > aws-auth-config-map.yaml
+ $ terraform output aws_auth_config_map | sed -e '/<<EOT$/d;/^EOT$/d;/^$/d' > aws_auth_config_map.yaml
 ```
 
 The resulting file looks like this:
@@ -63,7 +63,7 @@ data:
         - system:nodes
 ```
 
-To authenticate *clamour* to access EKS, configure the *aws-auth-config-map.yaml* as follows with the proper IAM ARN:
+To authenticate *clamour* user to access EKS, configure the *aws-auth-config-map.yaml* as follows with the proper IAM ARN:
 
 ```yaml
 apiVersion: v1
