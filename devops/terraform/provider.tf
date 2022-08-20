@@ -3,8 +3,6 @@ provider "aws" {
   region  = local.aws_region
 }
 
-data "aws_caller_identity" "current" {}
-
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
   token                  = data.aws_eks_cluster_auth.cluster.token

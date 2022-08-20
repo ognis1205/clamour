@@ -84,7 +84,6 @@ module "eks" {
       source_cluster_security_group = true
     }
 
-    # Node to node communications
     ingress_node_communications = {
       description = "Ingress Node to node"
       protocol    = "tcp"
@@ -123,4 +122,12 @@ module "eks" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
+}
+
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_id
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_id
 }
