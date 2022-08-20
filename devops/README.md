@@ -104,3 +104,9 @@ After configuring *aws-auth-config-map.yaml*, update *kubeconfig* and apply *Con
  $ kubectl config view
  $ kubectl cluster-info
 ```
+
+## Claen up resources on AWS
+
+```bash
+ $ terraform destroy
+```
