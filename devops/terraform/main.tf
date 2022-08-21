@@ -1,5 +1,5 @@
 locals {
-  prefix  = "clamour"
+  prefix      = "clamour"
   aws_profile = "clamour"
   aws_region  = "ap-northeast-1"
 #  ebs_block_device = {
@@ -100,6 +100,11 @@ module "eks" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
+}
+
+module "es" {
+  source      = "./modules/es"
+  domain_name = "${local.prefix}-es"
 }
 
 data "aws_eks_cluster" "cluster" {
