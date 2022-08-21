@@ -2,11 +2,6 @@ locals {
   prefix      = "clamour"
   aws_profile = "clamour"
   aws_region  = "ap-northeast-1"
-#  ebs_block_device = {
-#    block_device_name = "/dev/xvda",
-#    volume_type = "gp2"
-#    volume_size = "500"
-#  }
 }
 
 module "vpc" {
@@ -48,7 +43,7 @@ module "eks" {
   eks_managed_node_groups = {
     clamour = {
       desired_size   = 2
-      instance_types = ["t2.xlarge"]
+      instance_types = ["t2.large"]
     }
   }
 

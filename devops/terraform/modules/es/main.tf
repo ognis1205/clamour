@@ -26,7 +26,7 @@ resource "aws_elasticsearch_domain" "this" {
     internal_user_database_enabled = true
     master_user_options {
       master_user_name     = "admin"
-      master_user_password = "clamour-pass"
+      master_user_password = "Clamour-Pass-1234"
     }
   }
 }
