@@ -1,5 +1,5 @@
 locals {
-  app_prefix  = "clamour"
+  prefix  = "clamour"
   aws_profile = "clamour"
   aws_region  = "ap-northeast-1"
 #  ebs_block_device = {
@@ -9,32 +9,10 @@ locals {
 #  }
 }
 
-terraform {
-  required_version = "1.2.0"
-
-#  backend "s3" {
-#    bucket  = "clamour"
-#    key     = "eks/terraform.tfstate"
-#    profile = "clamour"
-#    region  = "ap-northeast-1"
-#  }
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "4.27.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.12.1"
-    }
-  }
-}
-
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.14.2"
-  name    = "${local.app_prefix}-vpc"
+  name    = "${local.prefix}-vpc"
 
   azs             = ["ap-northeast-1a", "ap-northeast-1c"]
   cidr            = "10.0.0.0/16"
@@ -59,7 +37,7 @@ module "vpc" {
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   version         = "18.28.0"
-  cluster_name    = "${local.app_prefix}-k8s"
+  cluster_name    = "${local.prefix}-k8s"
   cluster_version = "1.23"
 
   vpc_id                          = module.vpc.vpc_id
@@ -130,8 +108,4 @@ data "aws_eks_cluster" "cluster" {
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
-}
-
-output "aws_auth_config_map" {
-  value = module.eks.aws_auth_configmap_yaml
 }
