@@ -19,6 +19,11 @@ locals {
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
     length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
   }, {})
+  ism_policies = merge({
+    for filename in var.ism_policy_files :
+    replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
+    length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
+  }, {})
 }
 
 resource "aws_elasticsearch_domain" "this" {
@@ -45,39 +50,24 @@ resource "aws_elasticsearch_domain" "this" {
     tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
   }
 
+#  advanced_security_options {
+#    enabled                        = true
+#    internal_user_database_enabled = true
+#    master_user_options {
+#      master_user_name     = "admin"
+#      master_user_password = "Clamour-Pass-1234"
+#    }
+#  }
   advanced_security_options {
     enabled                        = true
-    internal_user_database_enabled = true
+    internal_user_database_enabled = false
     master_user_options {
       master_user_name     = "admin"
       master_user_password = "Clamour-Pass-1234"
+      master_user_arn      = "${data.aws_caller_identity.current.arn}"
     }
   }
-#  advanced_security_options {
-#    enabled                        = true
-#    internal_user_database_enabled = false
-#    master_user_options {
-#      master_user_arn = "${data.aws_caller_identity.current.arn}"
-#    }
-#  }
 }
-
-#resource "aws_elasticsearch_domain_policy" "this" {
-#  domain_name     = aws_elasticsearch_domain.this.domain_name
-#  access_policies = jsonencode({
-#    Version = "2012-10-17"
-#    Statement = [
-#      {
-#        Effect    = "Allow",
-#        Principal = {
-#          AWS = "*"
-#        },
-#	Action = "es:ESHttp*"
-#	Resource = "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${aws_elasticsearch_domain.this.domain_name}/*"
-#      }
-#    ]
-#  })
-#}
 
 resource "elasticsearch_opensearch_roles_mapping" "master_user" {
   for_each = {
@@ -90,6 +80,15 @@ resource "elasticsearch_opensearch_roles_mapping" "master_user" {
   backend_roles = concat(try(each.value.backend_roles, []), [var.master_user_arn])
   hosts         = try(each.value.hosts, [])
   users         = try(each.value.users, [])
+}
+
+resource "elasticsearch_opensearch_ism_policy" "this" {
+  for_each = local.ism_policies
+
+  policy_id = each.key
+  body      = jsonencode({ "policy" = each.value })
+
+  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
 }
 
 resource "elasticsearch_index_template" "this" {

@@ -66,6 +66,12 @@ variable "role_mapping_files" {
   default     = []
 }
 
+variable "ism_policy_files" {
+  description = "A set of all ISM policy files to create"
+  type        = set(string)
+  default     = []
+}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
