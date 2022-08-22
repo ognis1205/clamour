@@ -1,5 +1,5 @@
 locals {
-  prefix      = "clamour"
+  app_name    = "clamour"
   aws_profile = "clamour"
   aws_region  = "ap-northeast-1"
 }
@@ -7,7 +7,7 @@ locals {
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.14.2"
-  name    = "${local.prefix}-vpc"
+  name    = "${local.app_name}"
 
   azs             = ["ap-northeast-1a", "ap-northeast-1c"]
   cidr            = "10.0.0.0/16"
@@ -32,7 +32,7 @@ module "vpc" {
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   version         = "18.28.0"
-  cluster_name    = "${local.prefix}-k8s"
+  cluster_name    = "${local.app_name}"
   cluster_version = "1.23"
 
   vpc_id                          = module.vpc.vpc_id
@@ -43,7 +43,7 @@ module "eks" {
   eks_managed_node_groups = {
     clamour = {
       desired_size   = 2
-      instance_types = ["t2.large"]
+      instance_types = ["t2.medium"]
     }
   }
 
@@ -97,9 +97,14 @@ module "eks" {
   }
 }
 
-module "es" {
-  source      = "./modules/es"
-  domain_name = "${local.prefix}-es"
+module "opensearch" {
+  source      = "./modules/opensearch"
+  aws_profile = "${local.aws_profile}"
+  aws_region  = "${local.aws_region}"
+  domain_name = "${local.app_name}"
+  index_name  = "tweets"
+  role_files         = fileset(path.cwd, "configs/opensearch/roles/*.{yml,yaml}")
+  role_mapping_files = fileset(path.cwd, "configs/opensearch/role-mappings/*.{yml,yaml}")
 }
 
 data "aws_eks_cluster" "cluster" {
