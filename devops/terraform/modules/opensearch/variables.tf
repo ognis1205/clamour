@@ -8,7 +8,13 @@ variable "aws_region" {
   type        = string
 }
 
-variable "master_user" {
+variable "opensearch_version" {
+  description = "The version of OpenSearch to deploy"
+  type        = string
+  default     = "1.0"
+}
+
+variable "master_user_arn" {
   description = "The ARN for the master user of the cluster"
   type        = string
   default     = ""
@@ -19,10 +25,10 @@ variable "domain_name" {
   type        = string
 }
 
-variable "index_name" {
-  description = "Application index name"
-  type        = string
-}
+#variable "index_name" {
+#  description = "Application index name"
+#  type        = string
+#}
 
 variable "volume_type" {
   description = "EBS volume type"
@@ -36,8 +42,20 @@ variable "volume_size" {
   default     = 50
 }
 
+variable "index_template_files" {
+  description = "A set of all index template files to create"
+  type        = set(string)
+  default     = []
+}
+
+variable "index_files" {
+  description = "A set of all index files to create"
+  type        = set(string)
+  default     = []
+}
+
 variable "role_files" {
-  description = "A set of all role files to create."
+  description = "A set of all role files to create"
   type        = set(string)
   default     = []
 }
@@ -51,3 +69,14 @@ variable "role_mapping_files" {
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
+
+data "aws_iam_policy_document" "access_policy" {
+  statement {
+    actions   = ["es:*"]
+    resources = ["arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.domain_name}/*"]
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}

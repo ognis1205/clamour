@@ -1,4 +1,14 @@
 locals {
+  index_templates = merge({
+    for filename in var.index_template_files :
+    replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
+    length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
+  }, {})
+  indices = merge({
+    for filename in var.index_files :
+    replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
+    length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
+  }, {})
   roles = merge({
     for filename in var.role_files :
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
@@ -13,7 +23,8 @@ locals {
 
 resource "aws_elasticsearch_domain" "this" {
   domain_name           = "${var.domain_name}"
-  elasticsearch_version = "OpenSearch_1.1"
+  elasticsearch_version = "OpenSearch_${var.opensearch_version}"
+  access_policies       = data.aws_iam_policy_document.access_policy.json
 
   ebs_options {
     ebs_enabled = true
@@ -51,24 +62,24 @@ resource "aws_elasticsearch_domain" "this" {
 #  }
 }
 
-resource "aws_elasticsearch_domain_policy" "this" {
-  domain_name     = aws_elasticsearch_domain.this.domain_name
-  access_policies = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow",
-        Principal = {
-          AWS = "*"
-        },
-	Action = "es:ESHttp*"
-	Resource = "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${aws_elasticsearch_domain.this.domain_name}/*"
-      }
-    ]
-  })
-}
+#resource "aws_elasticsearch_domain_policy" "this" {
+#  domain_name     = aws_elasticsearch_domain.this.domain_name
+#  access_policies = jsonencode({
+#    Version = "2012-10-17"
+#    Statement = [
+#      {
+#        Effect    = "Allow",
+#        Principal = {
+#          AWS = "*"
+#        },
+#	Action = "es:ESHttp*"
+#	Resource = "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${aws_elasticsearch_domain.this.domain_name}/*"
+#      }
+#    ]
+#  })
+#}
 
-resource "elasticsearch_opensearch_roles_mapping" "master" {
+resource "elasticsearch_opensearch_roles_mapping" "master_user" {
   for_each = {
     for key in ["all_access", "security_manager"] :
     key => try(local.role_mappings[key], {})
@@ -76,9 +87,18 @@ resource "elasticsearch_opensearch_roles_mapping" "master" {
 
   role_name     = each.key
   description   = try(each.value.description, "")
-  backend_roles = concat(try(each.value.backend_roles, []), [var.master_user])
+  backend_roles = concat(try(each.value.backend_roles, []), [var.master_user_arn])
   hosts         = try(each.value.hosts, [])
   users         = try(each.value.users, [])
+}
+
+resource "elasticsearch_index_template" "this" {
+  for_each = local.index_templates
+
+  name = each.key
+  body = jsonencode(each.value)
+
+  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
 }
 
 resource "elasticsearch_opensearch_role" "this" {
@@ -107,7 +127,7 @@ resource "elasticsearch_opensearch_role" "this" {
     }
   }
 
-  depends_on = [elasticsearch_opensearch_roles_mapping.master]
+  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
 }
 
 resource "elasticsearch_opensearch_roles_mapping" "this" {
@@ -126,22 +146,23 @@ resource "elasticsearch_opensearch_roles_mapping" "this" {
 }
 
 resource "elasticsearch_index" "this" {
-  name               = "${var.index_name}"
-  number_of_shards   = 1
-  number_of_replicas = 1
-  mappings           = <<EOF
-{
-  "people": {
-    "_all": {
-      "enabled": false
-    },
-    "properties": {
-      "email": {
-        "type": "text"
-      }
-    }
+  for_each = local.indices
+
+  name               = each.key
+  number_of_shards   = try(each.value.number_of_shards, "")
+  number_of_replicas = try(each.value.number_of_replicas, "")
+  refresh_interval   = try(each.value.refresh_interval, "")
+  mappings           = jsonencode(try(each.value.mappings, {}))
+  aliases            = jsonencode(try(each.value.aliases, {}))
+  force_destroy      = true
+
+  depends_on = [elasticsearch_index_template.this]
+
+  lifecycle {
+    ignore_changes = [
+      number_of_shards,
+      number_of_replicas,
+      refresh_interval,
+    ]
   }
-}
-EOF
-  depends_on = [elasticsearch_opensearch_roles_mapping.this]
 }

@@ -102,9 +102,11 @@ module "opensearch" {
   aws_profile = "${local.aws_profile}"
   aws_region  = "${local.aws_region}"
   domain_name = "${local.app_name}"
-  index_name  = "tweets"
-  role_files         = fileset(path.cwd, "configs/opensearch/roles/*.{yml,yaml}")
-  role_mapping_files = fileset(path.cwd, "configs/opensearch/role-mappings/*.{yml,yaml}")
+
+  index_template_files = fileset(path.cwd, "configs/opensearch/index-templates/*.{yml,yaml}")
+  index_files          = fileset(path.cwd, "configs/opensearch/indices/*.{yml,yaml}")
+  role_files           = fileset(path.cwd, "configs/opensearch/roles/*.{yml,yaml}")
+  role_mapping_files   = fileset(path.cwd, "configs/opensearch/role-mappings/*.{yml,yaml}")
 }
 
 data "aws_eks_cluster" "cluster" {

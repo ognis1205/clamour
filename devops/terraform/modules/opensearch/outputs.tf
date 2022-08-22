@@ -17,8 +17,3 @@ output "domain_name" {
   description = "The name of the Elasticsearch domain"
   value       = aws_elasticsearch_domain.this.domain_name
 }
-
-output "index_name" {
-  description = "The name of the Elasticsearch index"
-  value       = elasticsearch_index.this.name
-}
