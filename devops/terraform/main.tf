@@ -99,8 +99,8 @@ module "eks" {
 
 module "opensearch" {
   source             = "./modules/opensearch"
-#  aws_profile = "${local.aws_profile}"
-#  aws_region  = "${local.aws_region}"
+  aws_profile        = "${local.aws_profile}"
+  aws_region         = "${local.aws_region}"
   domain_name        = "${local.app_name}"
   opensearch_version = "1.2"
 
@@ -108,5 +108,6 @@ module "opensearch" {
   index_files          = fileset(path.cwd, "configs/opensearch/indices/*.{yml,yaml}")
   role_files           = fileset(path.cwd, "configs/opensearch/roles/*.{yml,yaml}")
   role_mapping_files   = fileset(path.cwd, "configs/opensearch/role-mappings/*.{yml,yaml}")
+  ism_policy_files     = fileset(path.cwd, "configs/opensearch/ism-policies/*.{yml,yaml}")
 #  whitelisted_ips      = [jsondecode(data.http.ifconfig.body).ip]
 }

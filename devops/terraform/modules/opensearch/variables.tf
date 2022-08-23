@@ -1,12 +1,12 @@
-#variable "aws_profile" {
-#  description = "AWS profile"
-#  type        = string
-#}
+variable "aws_profile" {
+  description = "AWS profile"
+  type        = string
+}
 
-#variable "aws_region" {
-#  description = "AWS region"
-#  type        = string
-#}
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+}
 
 variable "opensearch_version" {
   description = "The version of OpenSearch to deploy"

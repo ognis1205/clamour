@@ -73,14 +73,14 @@ resource "aws_elasticsearch_domain" "this" {
 #  users         = try(each.value.users, [])
 #}
 
-resource "elasticsearch_opensearch_ism_policy" "this" {
-  for_each = local.ism_policies
-
-  policy_id = each.key
-  body      = jsonencode({ "policy" = each.value })
-
+#resource "elasticsearch_opensearch_ism_policy" "this" {
+#  for_each = local.ism_policies
+#
+#  policy_id = each.key
+#  body      = jsonencode({ "policy" = each.value })
+#
 #  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
-}
+#}
 
 resource "elasticsearch_index_template" "this" {
   for_each = local.index_templates

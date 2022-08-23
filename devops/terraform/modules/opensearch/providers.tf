@@ -1,7 +1,7 @@
 provider "elasticsearch" {
-  #aws_profile       = "${var.aws_profile}"
-  #aws_region        = "${var.aws_region}"
   url               = "https://${aws_elasticsearch_domain.this.endpoint}"
+  aws_profile       = "${var.aws_profile}"
+  aws_region        = "${var.aws_region}"
   username          = "${var.admin_user}"
   password          = "${var.admin_pass}"
   sign_aws_requests = false 
