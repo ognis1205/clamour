@@ -3,7 +3,8 @@ cluster_permissions:
 - indices:data/write/bulk
 
 index_permissions:
-  index_patterns : ["*"]
+  index_patterns :
+  - *
   allowed_actions:
   - create_index
   - write

@@ -1,12 +1,12 @@
-variable "aws_profile" {
-  description = "AWS profile"
-  type        = string
-}
+#variable "aws_profile" {
+#  description = "AWS profile"
+#  type        = string
+#}
 
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-}
+#variable "aws_region" {
+#  description = "AWS region"
+#  type        = string
+#}
 
 variable "opensearch_version" {
   description = "The version of OpenSearch to deploy"
@@ -25,10 +25,17 @@ variable "domain_name" {
   type        = string
 }
 
-#variable "index_name" {
-#  description = "Application index name"
-#  type        = string
-#}
+variable "admin_user" {
+  description = "OpenSearch admin user"
+  type        = string
+  default     = "admin"
+}
+
+variable "admin_pass" {
+  description = "OpenSearch admin user pass"
+  type        = string
+  default     = "Clamour-Pass-1234"
+}
 
 variable "volume_type" {
   description = "EBS volume type"
@@ -72,6 +79,12 @@ variable "ism_policy_files" {
   default     = []
 }
 
+#variable "whitelisted_ips" {
+#  type        = list(string)
+#  description = "Whitelisted IPs to access ES"
+#  default     = []
+#}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
@@ -84,5 +97,10 @@ data "aws_iam_policy_document" "access_policy" {
       type        = "AWS"
       identifiers = ["*"]
     }
+#    condition {
+#      test     = "IpAddress"
+#      variable = "aws:SourceIp"
+#      values   = var.whitelisted_ips
+#    }
   }
 }

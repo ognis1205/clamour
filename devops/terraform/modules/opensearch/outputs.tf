@@ -14,6 +14,16 @@ output "domain_id" {
 }
 
 output "domain_name" {
-  description = "The name of the Elasticsearch domain"
+  description = "Name of the Elasticsearch domain"
   value       = aws_elasticsearch_domain.this.domain_name
+}
+
+output "admin_user" {
+  description = "OpenSearch admin user"
+  value       = var.admin_user
+}
+
+output "admin_pass" {
+  description = "OpenSearch admin user pass"
+  value       = var.admin_pass
 }

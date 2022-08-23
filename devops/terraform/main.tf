@@ -98,21 +98,15 @@ module "eks" {
 }
 
 module "opensearch" {
-  source      = "./modules/opensearch"
-  aws_profile = "${local.aws_profile}"
-  aws_region  = "${local.aws_region}"
-  domain_name = "${local.app_name}"
+  source             = "./modules/opensearch"
+#  aws_profile = "${local.aws_profile}"
+#  aws_region  = "${local.aws_region}"
+  domain_name        = "${local.app_name}"
+  opensearch_version = "1.2"
 
   index_template_files = fileset(path.cwd, "configs/opensearch/index-templates/*.{yml,yaml}")
   index_files          = fileset(path.cwd, "configs/opensearch/indices/*.{yml,yaml}")
   role_files           = fileset(path.cwd, "configs/opensearch/roles/*.{yml,yaml}")
   role_mapping_files   = fileset(path.cwd, "configs/opensearch/role-mappings/*.{yml,yaml}")
-}
-
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+#  whitelisted_ips      = [jsondecode(data.http.ifconfig.body).ip]
 }

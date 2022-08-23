@@ -20,6 +20,8 @@ AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 Default region name [None]: ap-southeast-1
 Default output format [None]: text
  $ export AWS_DEFAULT_PROFILE=clamour
+ $ export AWS_ACCESS_KEY_ID=
+ $ export AWS_SECRET_ACCESS_KEY=
  $ aws sts get-caller-identity
 xxxxxxxxxxxx    arn:aws:iam::yyyyyyyyyyyy:user/clamour  ZZZZZZZZZZZZZZZZZZZZZ
 ```
@@ -108,5 +110,6 @@ After configuring *aws-auth-config-map.yaml*, update *kubeconfig* and apply *Con
 ## Claen up resources on AWS
 
 ```bash
+ $ cd terraform
  $ terraform destroy
 ```
