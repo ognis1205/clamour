@@ -60,6 +60,10 @@ resource "aws_elasticsearch_domain" "this" {
   }
 }
 
+# *** COMMENT OUT PURPOSEFULLY ***
+# NOTICE: This resouce tries to PUT policy JSON to '_opendistro/_security/api/rolesmapping/<role>' which
+#         is supposed to be '_plugins/_security/api/rolesmapping/<role>'.
+
 #resource "elasticsearch_opensearch_roles_mapping" "master_user" {
 #  for_each = {
 #    for key in ["all_access", "security_manager"] :
@@ -68,28 +72,29 @@ resource "aws_elasticsearch_domain" "this" {
 #
 #  role_name     = each.key
 #  description   = try(each.value.description, "")
-#  backend_roles = concat(try(each.value.backend_roles, []), [var.master_user_arn])
+#  backend_roles = concat(try(each.value.backend_roles, []), [data.aws_caller_identity.current.arn])
 #  hosts         = try(each.value.hosts, [])
 #  users         = try(each.value.users, [])
 #}
 
-#resource "elasticsearch_opensearch_ism_policy" "this" {
-#  for_each = local.ism_policies
+#resource "elasticsearch_opensearch_roles_mapping" "this" {
+#  for_each = {
+#    for key, value in local.role_mappings :
+#    key => value if !contains(["all_access", "security_manager"], key)
+#  }
 #
-#  policy_id = each.key
-#  body      = jsonencode({ "policy" = each.value })
+#  role_name     = each.key
+#  description   = try(each.value.description, "")
+#  backend_roles = try(each.value.backend_roles, [])
+#  hosts         = try(each.value.hosts, [])
+#  users         = try(each.value.users, [])
 #
-#  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
+#  depends_on = [elasticsearch_opensearch_role.this]
 #}
 
-resource "elasticsearch_index_template" "this" {
-  for_each = local.index_templates
-
-  name = each.key
-  body = jsonencode(each.value)
-
-#  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
-}
+# *** COMMENT OUT PURPOSEFULLY ***
+# NOTICE: This resouce tries to PUT policy JSON to '_opendistro/_security/api/roles/<role>' which
+#         is supposed to be '_plugins/_security/api/roles/<role>'.
 
 #resource "elasticsearch_opensearch_role" "this" {
 #  for_each = local.roles
@@ -120,20 +125,27 @@ resource "elasticsearch_index_template" "this" {
 #  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
 #}
 
-#resource "elasticsearch_opensearch_roles_mapping" "this" {
-#  for_each = {
-#    for key, value in local.role_mappings :
-#    key => value if !contains(["all_access", "security_manager"], key)
-#  }
+# *** COMMENT OUT PURPOSEFULLY ***
+# NOTICE: This resouce tries to PUT policy JSON to '_opendistro/_ism/policies<policy>' which
+#         is supposed to be '_plugins/_ism/policies/<policy>'.
+
+#resource "elasticsearch_opensearch_ism_policy" "this" {
+#  for_each = local.ism_policies
 #
-#  role_name     = each.key
-#  description   = try(each.value.description, "")
-#  backend_roles = try(each.value.backend_roles, [])
-#  hosts         = try(each.value.hosts, [])
-#  users         = try(each.value.users, [])
+#  policy_id = each.key
+#  body      = jsonencode({ "policy" = each.value })
 #
-#  depends_on = [elasticsearch_opensearch_role.this]
+#  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
 #}
+
+resource "elasticsearch_index_template" "this" {
+  for_each = local.index_templates
+
+  name = each.key
+  body = jsonencode(each.value)
+
+#  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
+}
 
 resource "elasticsearch_index" "this" {
   for_each = local.indices
@@ -142,6 +154,8 @@ resource "elasticsearch_index" "this" {
   number_of_shards   = try(each.value.number_of_shards, "")
   number_of_replicas = try(each.value.number_of_replicas, "")
   refresh_interval   = try(each.value.refresh_interval, "")
+  analysis_filter    = jsonencode(try(each.value.analysis.filter, {}))
+  analysis_analyzer  = jsonencode(try(each.value.analysis.analyzer, {}))
   mappings           = jsonencode(try(each.value.mappings, {}))
   aliases            = jsonencode(try(each.value.aliases, {}))
   force_destroy      = true

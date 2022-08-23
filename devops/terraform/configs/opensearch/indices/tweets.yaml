@@ -1,9 +1,66 @@
+analysis:
+  filter:
+    english_stop:
+      type: stop
+      stopwords: _english
+    english_stemmer:
+      type: stemmer
+      language: english
+    english_possessive_stemmer:
+      type: stemmer
+      language: possessive_english
+  analyzer:
+    rebuilt_english:
+      type: custom
+      tokenizer: standard
+      filter:
+        - english_possessive_stemmer
+        - lowercase
+        - english_stop
+        - english_stemmer
 mappings:
   _source:
     enabled: false
   properties:
-    created_at:
-      format: EEE MMM dd HH:mm:ss Z YYYY
+    id:
+      type: long
+      store: true
+    timestamp:
       type: date
-    email:
+      format: epoch_millis
+      store: true
+    lang:
+      type: keyword
+      store: true
+    user_name:
+      type: keyword
+      store: true
+      index: true
+    user_id:
+      type: keyword
+      store: true
+      index: true
+    image_url:
+      type: keyword
+      store: true
+    text:
       type: text
+      analyzer: rebuilt_english
+      store: true
+      index: true
+    hashtags:
+      type: keyword
+      store: true
+      index: true
+    geo:
+      type: geo_point
+      store: true
+    city_names:
+      type: keyword
+      store: true
+      index: true
+    city_coords:
+      type: geo_shape
+      strategy: recursive
+      store: true
+      doc_values: true

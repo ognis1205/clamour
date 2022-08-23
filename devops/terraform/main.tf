@@ -109,5 +109,4 @@ module "opensearch" {
   role_files           = fileset(path.cwd, "configs/opensearch/roles/*.{yml,yaml}")
   role_mapping_files   = fileset(path.cwd, "configs/opensearch/role-mappings/*.{yml,yaml}")
   ism_policy_files     = fileset(path.cwd, "configs/opensearch/ism-policies/*.{yml,yaml}")
-#  whitelisted_ips      = [jsondecode(data.http.ifconfig.body).ip]
 }
