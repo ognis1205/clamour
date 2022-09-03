@@ -73,9 +73,19 @@ variable "ism_policy_files" {
   default     = []
 }
 
+variable allowed_cidr {
+  description = "Allowed CIDR of the local IP"
+  type        = string
+  default     = null
+}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
+
+data http ip {
+  url = "http://ipv4.icanhazip.com"
+}
 
 data "aws_iam_policy_document" "access_policy" {
   statement {
@@ -84,6 +94,20 @@ data "aws_iam_policy_document" "access_policy" {
     principals {
       type        = "AWS"
       identifiers = ["*"]
+    }
+  }
+
+  statement {
+    actions   = ["es:*"]
+    resources = ["arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.domain_name}/*"]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    condition {
+      test     = "IpAddress"
+      variable = "aws:SourceIp"
+      values   = ["${local.current_ip}"]
     }
   }
 }

@@ -4,26 +4,34 @@ locals {
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
     length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
   }, {})
+
   indices = merge({
     for filename in var.index_files :
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
     length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
   }, {})
+
   roles = merge({
     for filename in var.role_files :
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
     length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
   }, {})
+
   role_mappings = merge({
     for filename in var.role_mapping_files :
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
     length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
   }, {})
+
   ism_policies = merge({
     for filename in var.ism_policy_files :
     replace(basename(filename), "/\\.(ya?ml|json)$/", "") =>
     length(regexall("\\.ya?ml$", filename)) > 0 ? yamldecode(file(filename)) : jsondecode(file(filename))
   }, {})
+
+  current_ip   = chomp(data.http.ip.body)
+
+  allowed_cidr = (var.allowed_cidr == null) ? "${local.current_ip}/32" : var.allowed_cidr
 }
 
 resource "aws_elasticsearch_domain" "this" {
@@ -56,6 +64,24 @@ resource "aws_elasticsearch_domain" "this" {
     master_user_options {
       master_user_name     = "${var.admin_user}"
       master_user_password = "${var.admin_pass}"
+    }
+  }
+}
+
+resource "aws_elasticsearch_domain_saml_options" "this" {
+  domain_name = aws_elasticsearch_domain.this.domain_name
+
+  saml_options {
+    enabled                 = true
+    subject_key             = var.saml_subject_key
+    roles_key               = var.saml_roles_key
+    session_timeout_minutes = var.saml_session_timeout
+    master_user_name        = var.saml_master_user_name
+    master_backend_role     = var.saml_master_backend_role
+
+    idp {
+      entity_id        = var.saml_entity_id
+      metadata_content = sensitive(replace(var.saml_metadata_content, "\ufeff", ""))
     }
   }
 }
@@ -129,14 +155,14 @@ resource "aws_elasticsearch_domain" "this" {
 # NOTICE: This resouce tries to PUT policy JSON to '_opendistro/_ism/policies<policy>' which
 #         is supposed to be '_plugins/_ism/policies/<policy>'.
 
-#resource "elasticsearch_opensearch_ism_policy" "this" {
-#  for_each = local.ism_policies
-#
-#  policy_id = each.key
-#  body      = jsonencode({ "policy" = each.value })
-#
+resource "elasticsearch_opensearch_ism_policy" "this" {
+  for_each = local.ism_policies
+
+  policy_id = each.key
+  body      = jsonencode({ "policy" = each.value })
+
 #  depends_on = [elasticsearch_opensearch_roles_mapping.master_user]
-#}
+}
 
 resource "elasticsearch_index_template" "this" {
   for_each = local.index_templates
